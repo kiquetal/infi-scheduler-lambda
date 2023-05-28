@@ -5,7 +5,16 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: python3.9
+  stage: ${opt:stage, 'dev'}
+
+custom:
+  TAGS: schedule-lambda
+  stage: ${opt:stage, 'dev'}
+
 
 functions:
-  hello:
-    handler: handler.hello
+  start-instances:
+    handler: handler.start_instances
+
+  end-instances:
+    handler: handler.end_instances
