@@ -6,11 +6,24 @@ provider:
   name: aws
   runtime: python3.9
   stage: ${opt:stage, 'dev'}
+  profile: ${file(./env_${opt:stage, 'dev'}.yaml):profile}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - ec2:StartInstances
+        - ec2:StopInstances
+        - ec2:DescribeInstances
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
+      Resource: "*"
 
 custom:
   TAGS: schedule-lambda
   stage: ${opt:stage, 'dev'}
-
 
 functions:
   start-instances:
