@@ -1,0 +1,58 @@
+service: infi-scheduler-lambda
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+  stage: ${opt:stage, 'dev'}
+  profile: ${file(./env_${opt:stage, 'dev'}.yaml):profile}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - ec2:StartInstances
+        - ec2:StopInstances
+        - ec2:DescribeInstances
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
+      Resource: "*"
+
+
+custom:
+  TAGS: schedule-lambda
+  stage: ${opt:stage, 'dev'}
+  pythonRequirements:
+    layer: true
+package:
+  individually: true
+  excludeDevDependencies: true
+  patterns:
+    - '!**'
+    - '!.zip'
+
+functions:
+  start-instance:
+    handler: lambda/handler.start_instances
+    layers:
+      - {Ref: PythonRequirementsLambdaLayer}
+    package:
+      patterns:
+        - '!**'
+        - '!.zip'
+        - 'lambda/handler.py'
+  stop-instances:
+    handler: lambda/handler.end_instances
+    layers:
+      - {Ref: PythonRequirementsLambdaLayer}
+    package:
+     exclude:
+      - '**'
+     include:
+      - lambda/handler.py
+
+plugins:
+  - serverless-python-requirements
